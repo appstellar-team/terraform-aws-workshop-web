@@ -1,0 +1,41 @@
+name: deploy-prod
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+jobs:
+  DeployDev:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - run: npm install
+
+      - name: Create env file
+        run: |
+          cat >> .env <<'EOF'
+           REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}
+          EOF
+      - name: Set env variables
+        run: |
+          echo "stage=prod" >> $GITHUB_ENV
+      - name: Build
+        run: npm run build
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Upload content to web client s3 bucket
+        run: |
+          aws s3 sync build s3://${{ secrets.S3_BUCKET_NAME }}
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
