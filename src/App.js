@@ -34,12 +34,12 @@ function App() {
   const classes = useStyles();
 
   const [endpointFetched, setEndpointFetched] = useState(false);
-  const [endpointResponded, setEndpointResponded] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handleClick = () => {
     const API_URL = process.env.REACT_APP_API_URL;
     fetch(API_URL).then((response) => {
-      setEndpointResponded(response.status === 200);
+      setMessage(response.body);
       setEndpointFetched(true);
     });
   };
@@ -61,11 +61,8 @@ function App() {
               Click me
             </Button>
           </div>
-          {endpointFetched && endpointResponded && (
-            <p className={classes.success}>SUCCESS!!!</p>
-          )}
-          {endpointFetched && !endpointResponded && (
-            <p className={classes.error}>API NOT READY!</p>
+          {endpointFetched && message && (
+            <p className={classes.success}>{message}</p>
           )}
         </div>
         <div className={classes.providerContainer}>
