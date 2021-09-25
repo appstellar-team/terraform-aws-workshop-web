@@ -38,8 +38,9 @@ function App() {
 
   const handleClick = () => {
     const API_URL = process.env.REACT_APP_API_URL;
-    fetch(API_URL).then((response) => {
-      setMessage(response.body);
+    fetch(API_URL).then(async (response) => {
+      const res = await response.json();
+      setMessage(res.message);
       setEndpointFetched(true);
     });
   };
